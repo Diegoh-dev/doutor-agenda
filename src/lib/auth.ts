@@ -2,11 +2,13 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { db } from "@/db";
+import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     usePlural: true, //para usar o plural nas pgTables
+    schema: schema,
   }),
   //precisamos colocar pq mudamos os nomes das variaveris do banco que vem como padrão quando é gerado pelo better-auth
   user: {
@@ -20,5 +22,9 @@ export const auth = betterAuth({
   },
   verification: {
     modelName: "verificationsTable",
+  },
+  //PARA IMPLEMENTAR A AUTENTICAÇÃO COM E-MAIL E SENHA
+  emailAndPassword: {
+    enabled: true,
   },
 });
