@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { usersToClinicsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-import SingOutButton from "./componets/sing-out-button";
+import SingOutButton from "./_componets/sing-out-button";
 
 const DashboardPage = async () => {
   const session = await auth.api.getSession({
