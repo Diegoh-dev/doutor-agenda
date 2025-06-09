@@ -1,6 +1,7 @@
 "use server";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { db } from "@/db";
@@ -22,7 +23,7 @@ export const upsertDoctor = actionClient
     const availableFromTime = parsedInput.availableFromTime; // 15:30:00
     const availableToTime = parsedInput.availableToTime; // 16:00:00
 
-    // COVERTE PARA UTC => TIRA O FUSO HORÁRIO
+    // COVERTE PARA UTC
     const availableFromTimeUTC = dayjs()
       .set("hour", parseInt(availableFromTime.split(":")[0]))
       .set("minute", parseInt(availableFromTime.split(":")[1]))
@@ -64,4 +65,5 @@ export const upsertDoctor = actionClient
           availableToTime: availableToTimeUTC.format("HH:mm:ss"),
         },
       });
+    revalidatePath("/doctors"); // PARA ATUALIZAR A PÁGINA QUANDO UM MÉDICO É INSERIDO
   });

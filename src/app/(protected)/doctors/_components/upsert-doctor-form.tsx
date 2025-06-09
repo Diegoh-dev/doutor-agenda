@@ -69,7 +69,7 @@ interface UpsertDoctorFormProps {
   onSuccess?: () => void;
 }
 
-const UpsertDoctorFoorm = ({ onSuccess }: UpsertDoctorFormProps) => {
+const UpsertDoctorForm = ({ onSuccess }: UpsertDoctorFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -387,4 +387,4 @@ const UpsertDoctorFoorm = ({ onSuccess }: UpsertDoctorFormProps) => {
   );
 };
 
-export default UpsertDoctorFoorm;
+export default UpsertDoctorForm;
