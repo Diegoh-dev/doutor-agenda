@@ -73,6 +73,7 @@ interface UpsertDoctorFormProps {
 
 const UpsertDoctorForm = ({ doctor, onSuccess }: UpsertDoctorFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
+    shouldUnregister: true, // quando fecha o fomrlario reseta o input
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: doctor?.name ?? "",
