@@ -61,7 +61,7 @@ const AppointmentsPage = async () => {
       </PageHeader>
       <PageContent>
         <div></div>
-        {/* <DataTable data={appointments} columns={appointmentsTableColumns} /> */}
+        <DataTable data={appointments} columns={appointmentsTableColumns} />
       </PageContent>
     </PageContainer>
   );

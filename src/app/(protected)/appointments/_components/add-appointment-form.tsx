@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import dayjs from "dayjs";
@@ -13,8 +13,8 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
-// import { addAppointment } from "@/actions/add-appointment";
-// import { getAvailableTimes } from "@/actions/get-available-times";
+import { addAppointment } from "@/actions/add-appointment";
+import { getAvailableTimes } from "@/actions/get-available-times";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -95,15 +95,15 @@ const AddAppointmentForm = ({
   const selectedPatientId = form.watch("patientId");
   const selectedDate = form.watch("date");
 
-  //   const { data: availableTimes } = useQuery({
-  //     queryKey: ["available-times", selectedDate, selectedDoctorId],
-  //     queryFn: () =>
-  //       getAvailableTimes({
-  //         date: dayjs(selectedDate).format("YYYY-MM-DD"),
-  //         doctorId: selectedDoctorId,
-  //       }),
-  //     enabled: !!selectedDate && !!selectedDoctorId,
-  //   });
+  const { data: availableTimes } = useQuery({
+    queryKey: ["available-times", selectedDate, selectedDoctorId],
+    queryFn: () =>
+      getAvailableTimes({
+        date: dayjs(selectedDate).format("YYYY-MM-DD"),
+        doctorId: selectedDoctorId,
+      }),
+    enabled: !!selectedDate && !!selectedDoctorId,
+  });
 
   // Atualizar o preço quando o médico for selecionado
   useEffect(() => {
@@ -132,21 +132,21 @@ const AddAppointmentForm = ({
     }
   }, [isOpen, form]);
 
-  //   const createAppointmentAction = useAction(addAppointment, {
-  //     onSuccess: () => {
-  //       toast.success("Agendamento criado com sucesso.");
-  //       onSuccess?.();
-  //     },
-  //     onError: () => {
-  //       toast.error("Erro ao criar agendamento.");
-  //     },
-  //   });
+  const createAppointmentAction = useAction(addAppointment, {
+    onSuccess: () => {
+      toast.success("Agendamento criado com sucesso.");
+      onSuccess?.();
+    },
+    onError: () => {
+      toast.error("Erro ao criar agendamento.");
+    },
+  });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    //   createAppointmentAction.execute({
-    //     ...values,
-    //     appointmentPriceInCents: values.appointmentPrice * 100,
-    //   });
+    createAppointmentAction.execute({
+      ...values,
+      appointmentPriceInCents: values.appointmentPrice * 100,
+    });
   };
 
   const isDateAvailable = (date: Date) => {
@@ -314,7 +314,7 @@ const AddAppointmentForm = ({
                       <SelectValue placeholder="Selecione um horário" />
                     </SelectTrigger>
                   </FormControl>
-                  {/* <SelectContent>
+                  <SelectContent>
                     {availableTimes?.data?.map((time) => (
                       <SelectItem
                         key={time.value}
@@ -324,20 +324,20 @@ const AddAppointmentForm = ({
                         {time.label} {!time.available && "(Indisponível)"}
                       </SelectItem>
                     ))}
-                  </SelectContent> */}
+                  </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* <DialogFooter>
+          <DialogFooter>
             <Button type="submit" disabled={createAppointmentAction.isPending}>
               {createAppointmentAction.isPending
                 ? "Criando..."
                 : "Criar agendamento"}
             </Button>
-          </DialogFooter> */}
+          </DialogFooter>
         </form>
       </Form>
     </DialogContent>
