@@ -1,4 +1,6 @@
 // import { eq } from "drizzle-orm";
+import dayjs from "dayjs";
+import { and, count, eq, gte, lte, sum } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -12,16 +14,24 @@ import {
   PageHeaderContent,
   PageTitle,
 } from "@/components/ui/page-container";
+import { db } from "@/db";
+import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 // import { db } from "@/db";
 // import { usersToClinicsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-import AddPatientButton from "../patients/_components/add-patient-button";
-import { patientsTableColumns } from "../patients/_components/table-columns";
 import { DatePicker } from "./_componets/date-picker";
-import SingOutButton from "./_componets/sing-out-button";
+import StatsCards from "./_componets/stats-cards";
 
-const DashboardPage = async () => {
+interface DashboardPageProps {
+  // A PARTIR DO NEXT 15 ISSO É UMA PROMISSE
+  searchParams: Promise<{
+    from: string;
+    to: string;
+  }>;
+}
+
+const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -39,13 +49,69 @@ const DashboardPage = async () => {
     redirect("/clinic-form");
   }
 
+  const { from, to } = await searchParams;
+
+  if (!from || !to) {
+    redirect(
+      `/dashboard?from=${dayjs().format("YYYY-MM-DD")}&to=${dayjs().add(1, "month").format("YYYY-MM-DD")}`,
+    );
+  }
+
+  const [revenueResult, appointmentsResult, patientsResult, doctorsResult] =
+    await Promise.all([
+      db
+        .select({
+          total: sum(appointmentsTable.appointmentPriceInCents),
+        })
+        .from(appointmentsTable)
+        .where(
+          and(
+            eq(appointmentsTable.clinicId, session.user.clinic.id),
+            gte(appointmentsTable.date, new Date(from)),
+            lte(appointmentsTable.date, new Date(to)),
+          ),
+        ),
+
+      db
+        .select({
+          total: count(),
+        })
+        .from(appointmentsTable)
+        .where(
+          and(
+            eq(appointmentsTable.clinicId, session.user.clinic.id),
+            gte(appointmentsTable.date, new Date(from)),
+            lte(appointmentsTable.date, new Date(to)),
+          ),
+        ),
+
+      db
+        .select({
+          total: count(),
+        })
+        .from(patientsTable)
+        .where(eq(patientsTable.clinicId, session.user.clinic.id)),
+
+      db
+        .select({
+          total: count(),
+        })
+        .from(doctorsTable)
+        .where(eq(doctorsTable.clinicId, session.user.clinic.id)),
+    ]);
+
+  const totalRevenue = revenueResult[0]?.total ?? 0;
+  const totalAppointments = appointmentsResult[0]?.total ?? 0;
+  const totalPatients = patientsResult[0]?.total ?? 0;
+  const totalDoctor = doctorsResult[0]?.total ?? 0;
+
   return (
     <PageContainer>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>Pacientes</PageTitle>
+          <PageTitle>Dashboard</PageTitle>
           <PageDescription>
-            Gerencie os pacientes da sua clínica
+            Tenha uma visão geral da sua clínica.
           </PageDescription>
         </PageHeaderContent>
         <PageAction>
@@ -53,7 +119,12 @@ const DashboardPage = async () => {
         </PageAction>
       </PageHeader>
       <PageContent>
-        <></>
+        <StatsCards
+          totalRevenue={totalRevenue ? Number(totalRevenue) : null}
+          totalAppointments={totalAppointments.total}
+          totalPatients={totalPatients.total}
+          totalDoctors={totalDoctor.total}
+        />
       </PageContent>
     </PageContainer>
   );
