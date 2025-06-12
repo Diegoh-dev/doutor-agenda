@@ -24,6 +24,7 @@ export const auth = betterAuth({
         where: eq(schema.usersToClinicsTable.userId, user.id),
         with: {
           clinic: true,
+          user: true,
         },
       });
 
@@ -33,6 +34,7 @@ export const auth = betterAuth({
       return {
         user: {
           ...user,
+          plan: clinic.user.plan,
           clinic: clinic?.clinicId
             ? {
                 id: clinic?.clinicId,
@@ -47,6 +49,24 @@ export const auth = betterAuth({
   //precisamos colocar pq mudamos os nomes das variaveris do banco que vem como padrão quando é gerado pelo better-auth
   user: {
     modelName: "usersTable",
+    //o better-authh precisa saber que possui esses campos novos
+    additionalFields: {
+      stripeCustomerId: {
+        type: "string",
+        fieldName: "stripeCustomerId",
+        required: false,
+      },
+      stripeSubscriptionId: {
+        type: "string",
+        fieldName: "stripeSubscriptionId",
+        required: false,
+      },
+      plan: {
+        type: "string",
+        fieldName: "plan",
+        required: false,
+      },
+    },
   },
   session: {
     modelName: "sessionsTable",

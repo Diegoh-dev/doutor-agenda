@@ -16,6 +16,9 @@ export const usersTable = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull(),
   image: text("image"),
+  stripeCustomerId: text("stripe_customer_id"), //O ID DO USUÁRIO NO STRIPE
+  stripeSubscriptionId: text("stripe_subscription_id"), //O ID DO PLANO DO USUÁRIO
+  plan: text("plan"), //O PLANO DO USUÁRIO
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
