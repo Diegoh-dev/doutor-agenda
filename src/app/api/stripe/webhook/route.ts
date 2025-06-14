@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -33,20 +34,29 @@ export const POST = async (request: Request) => {
       if (!event.data.object.id) {
         throw new Error("Subscription ID not found");
       }
-      const { subscription, subscription_details, customer } = event.data
-        .object as unknown as {
-        customer: string;
-        subscription: string;
-        subscription_details: {
-          metadata: {
-            userId: string;
-          };
-        };
-      };
+
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscription = (invoice as any).parent?.subscription_details
+        ?.subscription;
+
+      // const { subscription, subscription_details, customer } = event.data
+      //   .object as unknown as {
+      //   customer: string;
+      //   subscription: string;
+      //   subscription_details: {
+      //     metadata: {
+      //       userId: string;
+      //     };
+      //   };
+      // };
+
       if (!subscription) {
         throw new Error("Subscription not found");
       }
-      const userId = subscription_details.metadata.userId;
+      const userId = (invoice as any).parent?.subscription_details?.metadata
+        ?.userId;
+      // const userId = subscription_details.metadata.userId;
+      const customer = invoice.customer?.toString();
       if (!userId) {
         throw new Error("User ID not found");
       }
